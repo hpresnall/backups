@@ -1,0 +1,10 @@
+# directories also in ~/Backup
+OpenVPN
+Programs
+Vault
+.ssh
+
+.DS_Store
+
+# yabrc indexes
+yabrc/**/*_*_*
