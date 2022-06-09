@@ -31,6 +31,7 @@ function yabrc_update () {
     echo "\n----- ${prefix}_$name -----\n"
     $YABRC $UPDATE $path/${prefix}_$name.properties
   done
+  echo
 }
 
 # $1 = index name

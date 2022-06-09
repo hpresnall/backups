@@ -10,7 +10,7 @@ TO=/Volumes/SSDBackup
 # note that any rsync --exclude (globs) need to match up with ignoredDirs (regexes) in yabrc configs
 BACKUP=($FROM/Backup $TO)
 DOCUMENTS=( --exclude=Adobe $FROM/Documents $TO)
-DEVELOPMENT=(--exclude=.git $FROM/Development $TO)
+DEVELOPMENT=($FROM/Development $TO) # backup git to SSD, but still ignore in index
 # note trailing slash to copy contents _under_ Pictures to Media/Images
 IMAGES=(--exclude=RAW --exclude='*.lrdata' --exclude='*.lroldplugin' --exclude='*.photoslibrary' --exclude="Photo Booth Library" $FROM/Pictures/ $TO/Media/Images)
 # copy RAW separately since $FROM only has a partial backup / new files
@@ -21,7 +21,7 @@ echo "Source checksums"
 yabrc_update mac backup documents development pictures raw
 
 # then display what will be copied using $DRY_RUN
-echo -n "Checking what will be copied... "
+echo "Checking what will be copied... "
 $MIRROR $DRY_RUN $BACKUP
 $MIRROR $DRY_RUN $DOCUMENTS
 $MIRROR $DRY_RUN $DEVELOPMENT
