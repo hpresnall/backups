@@ -6,7 +6,7 @@
 BACKUP=$1
 set +o nounset
 if [[ -z $2 ]]; then
-  PREFIX=${BACKUP:l} # assume drive name and prefix match
+  PREFIX=${BACKUP:l} # assume prefix is the lowercase drive name
 else
   PREFIX=$2
 fi
@@ -39,9 +39,10 @@ $MIRROR $DOCUMENTS
 $MIRROR $DEVELOPMENT
 $MIRROR $MEDIA
 echo "Complete!"
+echo
 
 # run yabrc update on the destination backup
-echo "Backup checksums"
+echo "Updating backup indexes..."
 yabrc_update $PREFIX backup documents development media
 
 # finally, compare source and destination

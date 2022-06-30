@@ -11,7 +11,7 @@ DRY_RUN=(--dry-run --itemize-changes)
 
 YABRC=/Users/hunter/go/bin/yabrc
 YABRC_DIR=/Users/hunter/Backup/yabrc # location of config files and indexes
-UPDATE=(update --fast --autosave) # default to fast updates, only checksumming new / changed files
+UPDATE=(update --autosave --fast) # default to fast updates, only checksumming new / changed files
 
 # user confirmation function
 function ok () {

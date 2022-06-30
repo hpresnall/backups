@@ -3,6 +3,8 @@
 # optionally updates the indexes before comparing them
 . ./functions.sh
 
+./combine_media.sh
+
 # update the indexes when update is specified
 UPDATE=
 set +o nounset
@@ -40,7 +42,7 @@ echo "\n----- pictures -----\n"
 $YABRC compare $YABRC_DIR/mac/mac_pictures.properties $YABRC_DIR/ssd/ssd_images.properties
 # mac raw is a partial copy, use ignoreMissing to only compare the files that are on both
 echo "\n----- raw -----\n"
-$YABRC compare --ignoreMissing $YABRC_DIR/mac/mac_raw.properties $YABRC_DIR/ssd/ssd_raw.properties
+$YABRC compare --ignore_missing $YABRC_DIR/mac/mac_raw.properties $YABRC_DIR/ssd/ssd_raw.properties
 set -o errexit
 
 echo
@@ -48,7 +50,9 @@ echo "Updating data not on laptop..."
 # data not on laptop; nothing to compare, just update
 if [[ "$UPDATE" == "" ]]; then
   UPDATE=(update --autosave --fast) # default to --fast
+  yabrc_update ssd media_noimages raw
+else # use existing update command
+  yabrc_update ssd media_noimages # raw was already updated
 fi
-# else use existing update command which may not include --fast 
-yabrc_update ssd media_noimages raw
+
 echo
