@@ -1,5 +1,5 @@
 #!/bin/zsh
-# backup drives are orgainized as /Media/Images, Videos, Games etc.
+# backup drives are organized as /Media/Images, Videos, Games etc.
 # not all of these subdirectories are stored on the laptop
 # so, multiple yabrc indexes are used for the main SSDBackup volume
 # this script combines these indexes into a single index so it can be compared with other backup drives

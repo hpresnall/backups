@@ -6,11 +6,13 @@
 BACKUP=$1
 set +o nounset
 if [[ -z $2 ]]; then
-  PREFIX=${BACKUP:l} # assume prefix is the lowercase drive name
+  BACKUP_DIR=${BACKUP:l} # assume YABRC file names are the lowercase disk name
 else
-  PREFIX=$2
+  BACKUP_DIR=$2
 fi
 set -o nounset
+
+SOURCE_DIR=ssd
 
 FROM=/Volumes/SSDBackup
 TO=/Volumes/$BACKUP
@@ -43,11 +45,11 @@ echo
 
 # run yabrc update on the destination backup
 echo "Updating backup indexes..."
-yabrc_update $PREFIX backup documents development media
+yabrc_update $TO backup documents development media
 
-# finally, compare source and destination
+# compare source and destination
 echo "Comparing source with destination..."
-yabrc_compare backup ssd $PREFIX
-yabrc_compare documents ssd $PREFIX
-yabrc_compare development ssd $PREFIX
-yabrc_compare media ssd $PREFIX
+yabrc_compare backup $SOURCE_DIR $BACKUP_DIR
+yabrc_compare documents $SOURCE_DIR $BACKUP_DIR
+yabrc_compare development $SOURCE_DIR $BACKUP_DIR
+yabrc_compare media $SOURCE_DIR $BACKUP_DIR

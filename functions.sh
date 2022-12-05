@@ -24,19 +24,22 @@ function ok () {
 }
 
 function yabrc_update () {
-  local prefix=$1
+  # $1 is the disk name
+  # all other params are index names to update
+  # YABRC indexes are named <disk_name>/<disk_name>_<index_name>
+  local disk=$1
   local path=$YABRC_DIR/$1
   shift
   for name in "$@"; do
-    echo "\n----- ${prefix}_$name -----\n"
-    $YABRC $UPDATE $path/${prefix}_$name.properties
+    echo "\n----- ${disk}_$name -----\n"
+    $YABRC $UPDATE $path/${disk}_$name.properties
   done
   echo
 }
 
-# $1 = index name
-# $2 and $3 are index prefixes which are also in directories with the same name
 function yabrc_compare () {
+  # $1 is the index name
+  # $2 is the source backup name / disk, $3 is the destination
   echo "\n----- $1 -----\n"
   local index1=$YABRC_DIR/$2/$2_$1.properties
   local index2=$YABRC_DIR/$3/$3_$1.properties

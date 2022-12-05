@@ -25,7 +25,7 @@ if [[ "$UPDATE" != "" ]]; then
 
   echo
 
-  # yabrc update on backup
+  # run yabrc update on backup
   echo "Updating backup checksums..."
   yabrc_update ssd backup documents development images raw
 
