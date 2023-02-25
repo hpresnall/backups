@@ -21,7 +21,7 @@ TO=/Volumes/$BACKUP
 # note that any rsync --exclude (globs) need to match up with ignoredDirs (regexes) in yabrc configs
 BACKUP=($FROM/Backup $TO)
 DOCUMENTS=(--exclude=Adobe $FROM/Documents $TO)
-DEVELOPMENT=(--exclude=.git $FROM/Development $TO)
+DEVELOPMENT=(--exclude=.git --exclude=bin --exclude=build --exclude=target --exclude=apk_cache  --exclude=__pycache__ --exclude=htmlcov $FROM/Development $TO)
 MEDIA=(--exclude='*.lrdata' --exclude='*.lroldplugin' --exclude='*.photoslibrary' --exclude="Photo Booth Library" $FROM/Media $TO)
 
 # display what will be copied using $DRY_RUN

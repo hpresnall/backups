@@ -10,7 +10,7 @@ TO=/Volumes/SSDBackup
 # note that any rsync --exclude (globs) need to match up with ignoredDirs (regexes) in yabrc configs
 BACKUP=($FROM/Backup $TO)
 DOCUMENTS=(--exclude=Adobe $FROM/Documents $TO)
-DEVELOPMENT=($FROM/Development $TO) # backup git to SSD, but still ignore in index
+DEVELOPMENT=(--exclude=bin --exclude=build --exclude=target --exclude=apk_cache --exclude=__pycache__ --exclude=htmlcov $FROM/Development $TO) # backup git to SSD, but still ignore in index
 # note trailing slash to copy contents _under_ Pictures to Media/Images
 IMAGES=(--exclude=RAW --exclude='*.lrdata' --exclude='*.lroldplugin' --exclude='*.photoslibrary' --exclude="Photo Booth Library" $FROM/Pictures/ $TO/Media/Images)
 # copy RAW separately since $FROM only has a partial backup / new files
