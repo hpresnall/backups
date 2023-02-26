@@ -1,53 +1,33 @@
 #!/bin/zsh
 # backup all laptop files to an external SSD
+DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 
-. ./functions.sh
+SOURCE=/Users/hunter
+DEST=/Volumes/SSDBackup
 
-FROM=/Users/hunter
-TO=/Volumes/SSDBackup
+SOURCE_DISK=mac
+BACKUP_DISK=ssd
 
-# rsync options and paths for each directory to backup
-# note that any rsync --exclude (globs) need to match up with ignoredDirs (regexes) in yabrc configs
-BACKUP=($FROM/Backup $TO)
-DOCUMENTS=(--exclude=Adobe $FROM/Documents $TO)
-DEVELOPMENT=(--exclude=bin --exclude=build --exclude=target --exclude=apk_cache --exclude=__pycache__ --exclude=htmlcov $FROM/Development $TO) # backup git to SSD, but still ignore in index
-# note trailing slash to copy contents _under_ Pictures to Media/Images
-IMAGES=(--exclude=RAW --exclude='*.lrdata' --exclude='*.lroldplugin' --exclude='*.photoslibrary' --exclude="Photo Booth Library" $FROM/Pictures/ $TO/Media/Images)
-# copy RAW separately since $FROM only has a partial backup / new files
-RAW=($FROM/Pictures/RAW/ $TO/Media/Images/RAW/)
+. $DIR/functions.sh
 
 # copy SSH keys to backup without checking
-$COPY $FROM/.ssh $FROM/Backup
-echo
+backup --silent --dry_run $SOURCE/.ssh $SOURCE/Backup
 
-# first run yabrc update on source
-echo "Source checksums"
-yabrc_update mac backup documents development pictures raw
+# run yabrc update on the source
+yabrc_update $SOURCE_DISK backup documents development pictures raw
 
-# then display what will be copied using $DRY_RUN
-echo "Checking what will be copied... "
-$MIRROR $DRY_RUN $BACKUP
-$MIRROR $DRY_RUN $DOCUMENTS
-$MIRROR $DRY_RUN $DEVELOPMENT
-$MIRROR $DRY_RUN $IMAGES
-$COPY $DRY_RUN $RAW # only copy since not all RAW files are kept on the laptop
-
-# confirm everything looks ok
+# display what will be copied
+backup --dry_run backup documents development pictures partial_raw
 ok
 
-# then actually copy
-echo -n "Copying files... "
-$MIRROR $BACKUP
-$MIRROR $DOCUMENTS
-$MIRROR $DEVELOPMENT
-$MIRROR $IMAGES
-$COPY $RAW # only copy since not all RAW files are kept on the laptop
+# actually copy
+backup backup documents development pictures partial_raw
 echo "Complete!"
+echo
 
 # run yabrc update on the backup
-echo "Backup checksums"
-yabrc_update ssd backup documents development images raw
+yabrc_update $BACKUP_DISK backup documents development images raw
 # note skipping ssd_media since those files should not change; see validate_ssd.sh
 
 # copy the updated indexes to the backup
-$COPY $FROM/Backup/yabrc $TO/Backup/
+backup --silent  $SOURCE/Backup/yabrc $DEST/Backup/

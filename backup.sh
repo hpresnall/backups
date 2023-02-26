@@ -1,55 +1,37 @@
 #!/bin/zsh
-# copy all files from one backup disk to another
+# copy all files from the SSD backup to another disk
 # assumes all files are on the first disk
-. ./functions.sh
+DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 
 BACKUP=$1
 set +o nounset
-if [[ -z $2 ]]; then
-  BACKUP_DIR=${BACKUP:l} # assume YABRC file names are the lowercase disk name
+if [ -z "$2" ]; then
+  BACKUP_DISK=${BACKUP:l} # assume YABRC file names are the lowercase disk name
 else
-  BACKUP_DIR=$2
+  BACKUP_DISK=$2
 fi
 set -o nounset
 
-SOURCE_DIR=ssd
+SOURCE_DISK=ssd
 
-FROM=/Volumes/SSDBackup
-TO=/Volumes/$BACKUP
+SOURCE=/Volumes/SSDBackup
+DEST=/Volumes/$BACKUP
 
-# rsync options and paths for each directory to backup
-# note that any rsync --exclude (globs) need to match up with ignoredDirs (regexes) in yabrc configs
-BACKUP=($FROM/Backup $TO)
-DOCUMENTS=(--exclude=Adobe $FROM/Documents $TO)
-DEVELOPMENT=(--exclude=.git --exclude=bin --exclude=build --exclude=target --exclude=apk_cache  --exclude=__pycache__ --exclude=htmlcov $FROM/Development $TO)
-MEDIA=(--exclude='*.lrdata' --exclude='*.lroldplugin' --exclude='*.photoslibrary' --exclude="Photo Booth Library" $FROM/Media $TO)
+. $DIR/functions.sh
 
-# display what will be copied using $DRY_RUN
-echo "Checking what will be copied... "
-$MIRROR $DRY_RUN $BACKUP
-$MIRROR $DRY_RUN $DOCUMENTS
-$MIRROR $DRY_RUN $DEVELOPMENT
-$MIRROR $DRY_RUN $MEDIA
-
-# confirm everything looks ok
+# display what will be copied
+backup --dry_run backup documents development media
 ok
 
-# then actually copy
-echo -n "Copying files... "
-$MIRROR $BACKUP
-$MIRROR $DOCUMENTS
-$MIRROR $DEVELOPMENT
-$MIRROR $MEDIA
+# actually copy
+backup backup documents development media
 echo "Complete!"
 echo
 
-# run yabrc update on the destination backup
-echo "Updating backup indexes..."
-yabrc_update $TO backup documents development media
+# run yabrc update on the backup
+yabrc_update $BACKUP_DISK backup documents development media
 
-# compare source and destination
-echo "Comparing source with destination..."
-yabrc_compare backup $SOURCE_DIR $BACKUP_DIR
-yabrc_compare documents $SOURCE_DIR $BACKUP_DIR
-yabrc_compare development $SOURCE_DIR $BACKUP_DIR
-yabrc_compare media $SOURCE_DIR $BACKUP_DIR
+echo
+
+# compare source and backup
+yabrc_compare $SOURCE_DISK $BACKUP_DISK backup documents development media

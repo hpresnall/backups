@@ -1,9 +1,12 @@
 #!/bin/zsh
 # runs yabrc compare on all laptop vs SSD backup indexes
 # optionally updates the indexes before comparing them
-. ./functions.sh
+DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 
-./combine_media.sh
+SOURCE=/Users/hunter
+DEST=/Volumes/SSDBackup
+
+. $DIR/functions.sh
 
 # update the indexes when update is specified
 UPDATE=
@@ -20,23 +23,18 @@ set -o nounset
 
 if [[ "$UPDATE" != "" ]]; then
   # run yabrc update on source
-  echo "Updating laptop checksums..."
-  yabrc_update mac backup documents development pictures
+  yabrc_update mac backup documents development pictures raw
 
   echo
 
   # run yabrc update on backup
-  echo "Updating backup checksums..."
   yabrc_update ssd backup documents development images raw
 
   ok
 fi
 # else run with existing indexes
 
-echo "Comparing laptop with backup..."
-yabrc_compare backup mac ssd
-yabrc_compare documents mac ssd
-yabrc_compare development mac ssd
+yabrc_compare mac ssd backup documents development
 set +o errexit
 echo "\n----- pictures -----\n"
 $YABRC compare $YABRC_DIR/mac/mac_pictures.properties $YABRC_DIR/ssd/ssd_images.properties
@@ -46,6 +44,7 @@ $YABRC compare --ignore_missing $YABRC_DIR/mac/mac_raw.properties $YABRC_DIR/ssd
 set -o errexit
 
 echo
+
 echo "Updating data not on laptop..."
 # data not on laptop; nothing to compare, just update
 if [[ "$UPDATE" == "" ]]; then
@@ -54,5 +53,3 @@ if [[ "$UPDATE" == "" ]]; then
 else # use existing update command
   yabrc_update ssd media_noimages # raw was already updated
 fi
-
-echo

@@ -4,10 +4,9 @@
 set -o errexit
 set -o nounset
 
+MOCK=
+#MOCK=echo
 RSYNC=rsync
-COPY=($RSYNC -rth --copy-links)
-MIRROR=($COPY --delete) # remove deleted files from backups
-DRY_RUN=(--dry-run --itemize-changes)
 
 YABRC=/Users/hunter/go/bin/yabrc
 YABRC_DIR=/Users/hunter/Backup/yabrc # location of config files and indexes
@@ -16,34 +15,120 @@ UPDATE=(update --autosave --fast) # default to fast updates, only checksumming n
 # user confirmation function
 function ok () {
   vared -p "Does this look ok? " -c ok
-  if [[ "$ok" != "y" ]]; then
+  if [ "$ok" != "y" ]; then
     exit 1
   fi
   unset ok
   echo
 }
 
+MEDIA_EXCLUDES=(--exclude='*.lrdata' --exclude='*.lroldplugin' --exclude='*.photoslibrary' --exclude='Photo Booth Library')
+
+# asssumes SOURCE and DEST are defined
+function backup() {
+  # default to mirroring backups by deleting files in destination that are not in source
+  mirror="--delete"
+  dry_run=""
+  silent=false
+
+  # parse options; note MacOS getopt is not GNU, so easier to just fake it
+  # does not handle errors or out of order options
+  while true; do
+    case "$1" in
+      --copy_only)
+          mirror="";;
+      --dry_run)
+          dry_run=(--dry-run --itemize-changes);;
+      --silent)
+          silent="true";;
+      *)
+        break;;
+    esac
+    shift
+  done
+
+  if [ "$silent" = "false" ]; then
+    if [ -z "$dry_run" ]; then
+      echo "Copying files... "
+    else
+      echo "Checking what will be copied... "
+    fi
+  fi
+
+  # the rest of the args will usually be a named location
+  # this provides symmetry with the yabrc_ functions
+  while [ $# -gt 0 ]; do
+    location=$1
+    opts=""
+    src=
+    dest=$DEST
+    local mirror=$mirror
+
+    # note that any --exclude (globs) need to match up with ignoredDirs (regexes) in yabrc configs
+    case "$location" in
+      backup) 
+        src=$SOURCE/Backup;;
+      documents)
+        opts=--exclude=Adobe
+        src=$SOURCE/Documents;;
+      development) 
+        opts=(--exclude=bin --exclude=build --exclude=target --exclude=apk_cache --exclude=__pycache__ --exclude=htmlcov)
+        src=$SOURCE/Development;;
+      media)
+        opts=$MEDIA_EXCLUDES
+        src=$SOURCE/Media;;
+      pictures)
+        # laptop Pictures -> Backup/Media/Images
+        # note trailing slash to copy contents _under_ Pictures to Media/Images
+        opts=(--exclude=RAW $MEDIA_EXCLUDES)
+        src=$SOURCE/Pictures/
+        dest=$DEST/Media/Images;;
+      partial_raw)
+        # laptop RAW is a partial copy; never mirror!
+        mirror=""
+        src=$SOURCE/Pictures/RAW/
+        dest=$DEST/Media/Images/RAW;;
+      *)
+        # unknown location, assume provided args are a source and destination
+        src=$1
+        shift
+        dest=$1;;
+    esac
+
+    shift
+
+    $MOCK $RSYNC -rth --copy-links $mirror $dry_run $opts $src $dest
+  done
+}
+
 function yabrc_update () {
-  # $1 is the disk name
+  # $1 is the backup name / disk
   # all other params are index names to update
   # YABRC indexes are named <disk_name>/<disk_name>_<index_name>
   local disk=$1
   local path=$YABRC_DIR/$1
+
   shift
-  for name in "$@"; do
-    echo "\n----- ${disk}_$name -----\n"
-    $YABRC $UPDATE $path/${disk}_$name.properties
+  echo "Updating indexes for $disk..."
+  for index_name in "$@"; do
+    echo "\n----- ${index_name} -----\n"
+    $MOCK $YABRC $UPDATE $path/${disk}_${index_name}.properties
   done
   echo
 }
 
 function yabrc_compare () {
-  # $1 is the index name
-  # $2 is the source backup name / disk, $3 is the destination
-  echo "\n----- $1 -----\n"
-  local index1=$YABRC_DIR/$2/$2_$1.properties
-  local index2=$YABRC_DIR/$3/$3_$1.properties
-  set +o errexit # compare returns non-zero if there are changes; ensure multiple compares can run
-  $YABRC compare $index1 $index2
-  set -o errexit
+  # $1 is the source backup name / disk, $2 is the destination
+  source=$1
+  dest=$2
+  shift 2
+  echo "Comparing $source with $dest..."
+  for index_name in "$@"; do
+    echo "\n----- ${index_name} -----\n"
+    local index1=$YABRC_DIR/$source/${source}_${index_name}.properties
+    local index2=$YABRC_DIR/$dest/${dest}_${index_name}.properties
+    set +o errexit # compare returns non-zero if there are changes; ensure multiple compares can run
+    $MOCK $YABRC compare $index1 $index2
+    set -o errexit
+  done
 }
