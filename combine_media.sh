@@ -26,7 +26,7 @@ rm /tmp/yabrc_idx
 
 IFS=$(echo -en "\n\b")
 
-# update the relative path of each entry
+# update the relative path of each entry to match path from the media basedir
 for entry in $(gunzip -k -c $YABRC_DIR/ssd_images_current | $TAIL); do
   echo "Images/$entry" >> /tmp/media
 done

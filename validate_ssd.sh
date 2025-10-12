@@ -21,26 +21,32 @@ if [[ "$1" == "update" ]]; then
 fi
 set -o nounset
 
+INDEXES=(backup documents development)
+
 if [[ "$UPDATE" != "" ]]; then
   # run yabrc update on source
-  yabrc_update mac backup documents development pictures raw
+  yabrc_update mac $INDEXES pictures raw
 
   echo
 
   # run yabrc update on backup
-  yabrc_update ssd backup documents development images raw
+  yabrc_update ssd $INDEXES images raw
 
   ok
 fi
 # else run with existing indexes
 
-yabrc_compare mac ssd backup documents development
+yabrc_compare mac ssd $INDEXES
+
 set +o errexit
+
 echo "\n----- pictures -----\n"
 $YABRC compare $YABRC_DIR/mac/mac_pictures.properties $YABRC_DIR/ssd/ssd_images.properties
+
 # mac raw is a partial copy, use ignoreMissing to only compare the files that are on both
 echo "\n----- raw -----\n"
 $YABRC compare --ignore_missing $YABRC_DIR/mac/mac_raw.properties $YABRC_DIR/ssd/ssd_raw.properties
+
 set -o errexit
 
 echo
@@ -48,7 +54,7 @@ echo
 echo "Updating data not on laptop..."
 # data not on laptop; nothing to compare, just update
 if [[ "$UPDATE" == "" ]]; then
-  UPDATE=(update --autosave --fast) # default to --fast
+  UPDATE=(update --autosave --fast) # restore default from functions.sh
   yabrc_update ssd media_noimages raw
 else # use existing update command
   yabrc_update ssd media_noimages # raw was already updated

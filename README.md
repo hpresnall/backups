@@ -15,7 +15,7 @@ The laptop functions as the source and master of *almost* all files. The followi
 - `Development` - code and other projects
 - `Pictures` - images and videos. This includes a *partial* copy of the `RAW` directory containing unedited camera files. The full copy exists on all backup disks.
 
-The base directory for all these locations is the user's home directory (`~` or `/Users/<username`>).
+The base directory for all these locations is the user's home directory (`~` or `/Users/<username>`).
 
 ## Backup Disk Configurations
 
@@ -35,7 +35,7 @@ The source laptop configurations are in `mac` and use the following `.properties
 - `mac_documents.properties` - for `~/Documents`
 - `mac_development.properties` - for `~/Development`
 - `mac_pictures.properties` - for `~/Pictures`; excludes `RAW`
-- `mac_raw.properties` - for `~/Pictures/RAW`; this is a partial copy of what is on the backups
+- `mac_raw.properties` - for `~/Pictures/RAW`; this is a partial copy of what is on the backups and tracked as `<backup>_media.properties`
 
 Backups disks use the following configurations:
 
@@ -61,14 +61,22 @@ For comparison with other backup drives, the `ssd_media` index is created using 
 Used to copy files from the laptop to the default SSD backup. This script updates the SSD yabrc indexes after copying the files, using `--fast`.
 
 ### `combine_media.sh`
-Merges the SSD indexes for `Media` into `ssd_media_current` for comparision with other backups.
+Merges the multiple indexes for `Media` on the default SSD into `ssd_media_current` for comparision with other backups.
 
 ### `backup.sh`
 Copies files from the default SSD backup disk to another backup. The backup disk is specified by the first command line parameter (`$1`). It is assumed that the prefix used for the yabrc indexes is the lowercase name of the mountpoint for the disk. If not, `$2` can be used to set the prefix.
 
 After copying the files, `yabrc update --fast` is run to update the destination indexes. Finally `yabrc compare` is run on all the indexes to ensure all files match between the external SSD and destination.
 
-### `validate_ssh.sh`
+### `validate_ssd.sh`
 Runs `yabrc compare` on all laptop indexes against the SSD indexes. Also updates `ssd_media_noimages` and `ssd_raw` to confirm that no files at rest have changed.
 
 Accepts two optional parameters. `update` runs update on both the laptop and SSD indexes before doing the compare. `update full` updates the indexes *without* `--fast` to checksum all files, not just the files that have changed since the last index update.
+
+## Flow
+1. Copy changed files on laptop to the default backup disk, SSD - `backup_ssd.sh`
+1. Confirm the contents of the SSD matches the laptop - `validate_ssd.sh`
+    1. Always - run as part `backup_ssd.sh` to compare laptop & SSD yabrc indexes and confirm no changes to SSD data in `/Media` not on laptop
+    1. Occasionally - run with `update full` to update yabrc indexes on all files and compare the laptop and SSD indexes
+    1. Almost never - run with just `update` to check for changes since the last backup
+1. Copy changes files from the default backup disk to other backups - `backup.sh`

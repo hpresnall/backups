@@ -19,19 +19,21 @@ DEST=/Volumes/$BACKUP
 
 . $DIR/functions.sh
 
+INDEXES=(backup documents development media)
+
 # display what will be copied
-backup --dry_run backup documents development media
+backup --dry_run $INDEXES
 ok
 
 # actually copy
-backup backup documents development media
+backup $INDEXES
 echo "Complete!"
 echo
 
 # run yabrc update on the backup
-yabrc_update $BACKUP_DISK backup documents development media
+yabrc_update $BACKUP_DISK $INDEXES
 
 echo
 
-# compare source and backup
-yabrc_compare $SOURCE_DISK $BACKUP_DISK backup documents development media
+# compare source and backup to ensure the copy was successful
+yabrc_compare $SOURCE_DISK $BACKUP_DISK $INDEXES
