@@ -1,0 +1,3 @@
+root: /users/hunter/Pictures
+baseName: mac_pictures
+ignoredDirs: [.*\.photoslibrary, .*\.lrdata, .*\.lroldplugin, Photo Booth Library, RAW]

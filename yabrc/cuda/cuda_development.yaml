@@ -1,0 +1,3 @@
+root: /Volumes/Cuda/Development
+baseName: cuda_development
+ignoredDirs: [.git, bin, build, target, htmlcov, apk_cache, __pycache__]
