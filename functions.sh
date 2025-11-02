@@ -112,7 +112,7 @@ function yabrc_update () {
   echo "Updating indexes for $disk..."
   for index_name in "$@"; do
     echo "\n----- ${index_name} -----\n"
-    $MOCK $YABRC $UPDATE $path/${disk}_${index_name}.properties
+    $MOCK $YABRC $UPDATE $path/${disk}_${index_name}.yaml
   done
   echo
 }
@@ -125,8 +125,8 @@ function yabrc_compare () {
   echo "Comparing $source with $dest..."
   for index_name in "$@"; do
     echo "\n----- ${index_name} -----\n"
-    local index1=$YABRC_DIR/$source/${source}_${index_name}.properties
-    local index2=$YABRC_DIR/$dest/${dest}_${index_name}.properties
+    local index1=$YABRC_DIR/$source/${source}_${index_name}.yaml
+    local index2=$YABRC_DIR/$dest/${dest}_${index_name}.yaml
     set +o errexit # compare returns non-zero if there are changes; ensure multiple compares can run
     $MOCK $YABRC compare $index1 $index2
     set -o errexit

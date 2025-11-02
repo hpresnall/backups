@@ -39,6 +39,6 @@ done
 gzip -f /tmp/media
 mv /tmp/media.gz $YABRC_DIR/ssd_media_current
 
-# using pre-created ssd_media.properties
-$YABRC print $YABRC_DIR/ssd_media.properties
+# using pre-created ssd_media.yaml
+$YABRC print $YABRC_DIR/ssd_media.yaml
 echo

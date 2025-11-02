@@ -41,11 +41,11 @@ yabrc_compare mac ssd $INDEXES
 set +o errexit
 
 echo "\n----- pictures -----\n"
-$YABRC compare $YABRC_DIR/mac/mac_pictures.properties $YABRC_DIR/ssd/ssd_images.properties
+$YABRC compare $YABRC_DIR/mac/mac_pictures.yaml $YABRC_DIR/ssd/ssd_images.yaml
 
 # mac raw is a partial copy, use ignoreMissing to only compare the files that are on both
 echo "\n----- raw -----\n"
-$YABRC compare --ignore_missing $YABRC_DIR/mac/mac_raw.properties $YABRC_DIR/ssd/ssd_raw.properties
+$YABRC compare --ignore_missing $YABRC_DIR/mac/mac_raw.yaml $YABRC_DIR/ssd/ssd_raw.yaml
 
 set -o errexit
 
