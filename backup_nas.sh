@@ -1,46 +1,58 @@
 #!/bin/zsh
-# copy all files from one backup disk to another
+# copy all files to the NAS
+# this is separate from the main backup.sh script due to how SMB volumes are defined on the NAS
 # assumes all files are on the first disk
-. ./functions.sh
+DIR=$(cd -P -- "$(dirname -- "$0")" && pwd -P)
 
-set +o errexit
-FROM=/Users/hunter
-TO=/Volumes/Hunter
+# mount NAS volumes via SMB; this will open the Finder and prompt for user / pass, if needed
+open 'smb://storage/Backup'
+open 'smb://storage/Hunter' # includes Development & Document dirs
+open 'smb://storage/Media'
 
-# rsync options and paths for each directory to backup
-# note that any rsync --exclude (globs) need to match up with ignoredDirs (regexes) in yabrc configs
-BACKUP=($FROM/Backup $TO)
-DOCUMENTS=(--exclude=Adobe $FROM/Documents $TO)
-DEVELOPMENT=(--exclude=.git $FROM/Development $TO)
-#MEDIA=(--exclude='*.lrdata' --exclude='*.lroldplugin' --exclude='*.photoslibrary' --exclude="Photo Booth Library" $FROM/Media $TO)
+. $DIR/functions.sh
 
-# display what will be copied using $DRY_RUN
-echo -n "Checking what will be copied... "
-$MIRROR $DRY_RUN $BACKUP
-$MIRROR $DRY_RUN $MIRROR $DOCUMENTS
-$MIRROR $DRY_RUN $MIRROR $DEVELOPMENT
-#$MIRROR $DRY_RUN $MIRROR $MEDIA
+# note using master backup disk, not the local copy to avoid partial RAW issues
+SOURCE=/Volumes/SSDBackup
 
-# confirm everything looks ok
+# display what will be copied
+DEST=/Volumes/Backup
+backup --dry_run backup
+
+DEST=/Volumes/Hunter
+backup --dry_run documents development
+
+# directly mounted; /Media will be appended to $SOURCE
+DEST=/Volumes
+backup --dry_run media
+
 ok
 
-# then actually copy
-echo -n "Copying files... "
-$MIRROR $BACKUP
-$MIRROR $DOCUMENTS
-$MIRROR $DEVELOPMENT
-#$MIRROR $MEDIA
+# actually copy
+DEST=/Volumes/Backup
+backup backup
+
+DEST=/Volumes/Hunter
+backup documents development
+
+DEST=/Volumes
+backup media
+
 echo "Complete!"
-
-# run yabrc update on the destination backup
-echo "Backup checksums"
 echo
-yabrc_update nas backup documents development #images
 
-# finally, compare source and destination
-echo "Comparing source with destination..."
+# run yabrc update on the NAS
+yabrc_update nas backup #documents development media
+
 echo
-#yabrc_compare backup mac nas
-#yabrc_compare documents mac nas
-#yabrc_compare development mac nas
-#yabrc_compare media mac nas
+
+# compare source and NAS to ensure the copy was successful
+yabrc_compare ssd nas backup documents development media
+
+# copy the updated indexes to the backup
+SOURCE=/Users/hunter/Backup/yabrc
+DEST=/Volumes/Backup
+backup --silent $SOURCE $DEST
+
+umount /Volumes/Backup
+umount /Volumes/Hunter
+umount /Volumes/Media
