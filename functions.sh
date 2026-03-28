@@ -74,7 +74,7 @@ function backup() {
         opts+=(--exclude=Adobe)
         src=$SOURCE/Documents;;
       development)
-        opts+=(--exclude=bin --exclude=build --exclude=target --exclude=apk_cache --exclude=__pycache__ --exclude=htmlcov)
+        opts+=(--exclude=.venv --exclude=bin --exclude=build --exclude=target --exclude=apk_cache --exclude=__pycache__ --exclude=htmlcov)
         src=$SOURCE/Development;;
       media)
         opts+=($MEDIA_EXCLUDES)
