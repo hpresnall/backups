@@ -9,13 +9,16 @@ open 'smb://storage/Backup'
 open 'smb://storage/Hunter' # includes Development & Document dirs
 open 'smb://storage/Media'
 
+sleep 15
+
 . $DIR/functions.sh
 
 # note using master backup disk, not the local copy to avoid partial RAW issues
 SOURCE=/Volumes/SSDBackup
 
 # display what will be copied
-DEST=/Volumes/Backup
+# directly mounted; /Media will be appended to $SOURCE
+DEST=/Volumes
 backup --dry_run backup
 
 DEST=/Volumes/Hunter
@@ -28,7 +31,7 @@ backup --dry_run media
 ok
 
 # actually copy
-DEST=/Volumes/Backup
+DEST=/Volumes
 backup backup
 
 DEST=/Volumes/Hunter
@@ -41,7 +44,7 @@ echo "Complete!"
 echo
 
 # run yabrc update on the NAS
-yabrc_update nas backup #documents development media
+yabrc_update nas backup documents development media
 
 echo
 
